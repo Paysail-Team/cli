@@ -1,14 +1,19 @@
 {
   "name": "@syrosecops/cli",
-  "version": "1.0.0",
+  "version": "1.0.1",
   "description": "Inject secrets from your Syro project using the Syro CLI.",
   "main": "index.js",
   "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1"
+    "postinstall": "node postinstall.js install",
+    "preuninstall": "node postinstall.js uninstall"
   },
   "repository": {
     "type": "git",
     "url": "git+https://github.com/Paysail-Team/cli.git"
+  },
+  "goBinary": {
+    "name": "syro",
+    "path": "./bin"
   },
   "keywords": [
     "cli",
@@ -20,5 +25,12 @@
   "bugs": {
     "url": "https://github.com/Paysail-Team/cli/issues"
   },
-  "homepage": "https://github.com/Paysail-Team/cli#readme"
+  "homepage": "https://github.com/Paysail-Team/cli#readme",
+  "files": [
+    "dist",
+    "postinstall.js"
+  ],
+  "dependencies": {
+    "mkdirp": "^1.0.4"
+  }
 }
