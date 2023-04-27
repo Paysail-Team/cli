@@ -24,13 +24,13 @@ var loginCmd = &cobra.Command{
 
 		isConfigLoaded, config, err := util.LoadConfigFromProjectConfigFile()
 		if err != nil {
-			fmt.Println("Something went wrong while loading items from your project's config file.")
+			fmt.Printf("Failed to load items from config file.\n")
 		}
 
 		if len(token) > 0 && len(projectId) > 0 {
 			companyId, validatedAccessToken, validatedProjectId, err := api.ValidateAccessTokenAndProjectId(token, projectId, env, customServerUrl)
 			if err != nil {
-				fmt.Println("Something went wrong while validating your access token and project ID.")
+				fmt.Printf("Failed to validate your access token and project ID.\n")
 			}
 			util.SaveCompanyIdAndValidatedInfoToProjectConfigFile(companyId, validatedAccessToken, validatedProjectId)
 			return
@@ -39,7 +39,7 @@ var loginCmd = &cobra.Command{
 		if isConfigLoaded == true {
 			isSessionTokenValid, err := api.ValidateSessionToken(config.SessionToken, env, customServerUrl)
 			if err != nil {
-				fmt.Println("Something went wrong while validating your session token. We recommend logging in again.")
+				fmt.Printf("Failed to validate your session token. We recommend logging in again.\n")
 				companyId, memberId, sessionToken, err := loginAndUpdateProjectConfigFile(env, customServerUrl)
 				if err != nil {
 					return
@@ -50,7 +50,7 @@ var loginCmd = &cobra.Command{
 				}
 			}
 			if !isSessionTokenValid {
-				fmt.Println("Your session token is invalid. You'll need to log in again.")
+				fmt.Printf("Your session token is invalid. You'll need to log in again.\n")
 				companyId, memberId, sessionToken, err := loginAndUpdateProjectConfigFile(env, customServerUrl)
 				if err != nil {
 					return
@@ -66,7 +66,7 @@ var loginCmd = &cobra.Command{
 						return
 					}
 				} else {
-					fmt.Println("You're all set!\nTo learn more about the app and the CLI commands it offers, you may enter `Syro --help` or `Syro [command] --help`.")
+					fmt.Printf("You're all set!\nTo learn more about the app and the CLI commands it offers, you may enter `Syro --help` or `Syro [command] --help`.\n")
 				}
 			}
 		} else {
@@ -91,49 +91,49 @@ func init() {
 }
 
 func loginAndUpdateProjectConfigFile(env string, customServerUrl string) (companyId string, memberId string, sessionToken string, err error) {
-	fmt.Println("Please enter your credentials.")
+	fmt.Printf("Please enter your credentials.\n")
 	email, password, err := getLoginCredentials()
 	if err != nil {
-		fmt.Println("Something went wrong while getting your credentials. Please try again.")
+		fmt.Printf("Failed to get your credentials. Please try again.\n")
 		return "", "", "", err
 	}
 
 	companyId, expiresAt, memberId, sessionToken, err := api.Login(email, password, env, customServerUrl)
 	if err != nil {
-		fmt.Println("Invalid email/password combination. Please input the correct credentials.")
+		fmt.Printf("Login failed!\n")
 		return "", "", "", err
 	}
-	fmt.Println("Login successful!")
+	fmt.Print("Login successful!\n")
 
 	err = util.SaveUserAndSessionInfoToProjectConfigFile(companyId, expiresAt, memberId, sessionToken)
 	if err != nil {
-		fmt.Println("Something went wrong while saving user and session info to your project's config file.")
+		fmt.Printf("Failed to save user and session info to your config file.\n")
 		return "", "", "", err
 	}
 	return companyId, memberId, sessionToken, nil
 }
 
 func getProjectIdAndUpdateProjectConfigFile(companyId string, memberId string, sessionToken string, env string, customServerUrl string) (projectId string, err error) {
-	fmt.Println("Please enter the project ID of a project you own or shared with you.")
+	fmt.Printf("Please enter the project ID of a project you own or shared with you.\n")
 	userProjectId, err := util.GetProjectId()
 	if err != nil {
-		fmt.Println("Something went wrong while getting your project ID. Please try again.")
+		fmt.Printf("Failed to get your project ID. Please try again.\n")
 		return "", err
 	}
 
 	isProjectIdValid, err := api.ValidateProjectId(companyId, memberId, userProjectId, sessionToken, env, customServerUrl)
 	if !isProjectIdValid {
-		fmt.Println("The project ID you entered is not associated with any project you own or shared with you. Please try again.")
+		fmt.Printf("Failed to validate project ID. The project ID you entered may not be associated with any project you own or shared with you. Please try again.\n")
 		return "", err
 	} else {
-		fmt.Println("Project ID Validated!")
+		fmt.Printf("Project ID Validated!\n")
 		err = util.SaveProjectIdToProjectConfigFile(userProjectId)
 		if err != nil {
-			fmt.Println("Something went wrong while saving user and session info to your project's config file.")
+			fmt.Printf("Failed to save user and session info to config file.\n")
 			return "", err
 		}
 	}
-	fmt.Println("You're all set!\nTo learn more about the app and the CLI commands it offers, you may enter `Syro --help` or `Syro [command] --help`.")
+	fmt.Printf("You're all set!\nTo learn more about the app and the CLI commands it offers, you may enter `Syro --help` or `Syro [command] --help`.\n")
 	return userProjectId, nil
 }
 

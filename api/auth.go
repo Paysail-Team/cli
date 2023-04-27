@@ -26,19 +26,21 @@ func Login(email string, password string, env string, customServerUrl string) (c
 		Post(fmt.Sprintf("%s%s", serverApiUrl, util.CliLogin))
 
 	if err != nil {
-		fmt.Printf("Something went wrong while authenticating.")
-		fmt.Printf("Error :: %v", err)
+		fmt.Printf("Failed to connect to the server.\n")
+		fmt.Printf("Error :: %v\n", err)
 		return "", "", "", "", err
 	}
 
 	loginResponse := model.LoginResponse{}
 	if err := json.Unmarshal(response.Body(), &loginResponse); err != nil {
-		fmt.Printf("Could not unmarshal response from authentication.")
-		fmt.Printf("Error :: %v", err)
+		fmt.Print("Unable to unmarshal response from authentication.\n")
+		fmt.Printf("Error :: %v\n", err)
 		return "", "", "", "", err
 	}
 
 	if len(loginResponse.Error) > 0 {
+		fmt.Printf("The server responded with an error.\n")
+		fmt.Printf("Error :: %v\n", loginResponse.Error)
 		return "", "", "", "", errors.New(loginResponse.Error)
 	}
 
@@ -58,19 +60,21 @@ func ValidateAccessTokenAndProjectId(accessToken string, projectId string, env s
 		Post(fmt.Sprintf("%s%s", serverApiUrl, util.CliValidateAccessTokenAndProjectId))
 
 	if err != nil {
-		fmt.Printf("Something went wrong while validating your access token and project ID.")
-		fmt.Printf("Error :: %v", err)
+		fmt.Printf("Failed to connect to the server.\n")
+		fmt.Printf("Error :: %v\n", err)
 		return "", "", "", err
 	}
 
 	validateAccessTokenAndProjectIdResponse := model.ValidateAccessTokenAndProjectIdResponse{}
 	if err := json.Unmarshal(response.Body(), &validateAccessTokenAndProjectIdResponse); err != nil {
-		fmt.Printf("Could not unmarshal response from validate access token and project ID request.")
-		fmt.Printf("Error :: %v", err)
+		fmt.Printf("Could not unmarshal response from validate access token and project ID request.\n")
+		fmt.Printf("Error :: %v\n", err)
 		return "", "", "", err
 	}
 
 	if len(validateAccessTokenAndProjectIdResponse.Error) > 0 {
+		fmt.Print("The server responded with an error.\n")
+		fmt.Printf("Error :: %v\n", validateAccessTokenAndProjectIdResponse.Error)
 		return "", "", "", errors.New(validateAccessTokenAndProjectIdResponse.Error)
 	}
 
@@ -90,19 +94,21 @@ func ValidateSessionToken(sessionToken string, env string, customServerUrl strin
 		Post(fmt.Sprintf("%s%s", serverApiUrl, util.CliValidateSessionToken))
 
 	if err != nil {
-		fmt.Printf("Something went wrong while validating your session token.")
-		fmt.Printf("Error :: %v", err)
+		fmt.Printf("Failed to connect to the server.\n")
+		fmt.Printf("Error :: %v\n", err)
 		return false, err
 	}
 
 	validateSessionTokenResponse := model.ValidateSessionTokenResponse{}
 	if err := json.Unmarshal(response.Body(), &validateSessionTokenResponse); err != nil {
-		fmt.Printf("Could not unmarshal response from validate session token request.")
-		fmt.Printf("Error :: %v", err)
+		fmt.Printf("Could not unmarshal response from validate session token request.\n")
+		fmt.Printf("Error :: %v\n", err)
 		return false, err
 	}
 
 	if len(validateSessionTokenResponse.Error) > 0 {
+		fmt.Printf("The server responded with an error.\n")
+		fmt.Printf("Error :: %v\n", validateSessionTokenResponse.Error)
 		return false, errors.New(validateSessionTokenResponse.Error)
 	}
 

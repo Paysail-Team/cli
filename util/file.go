@@ -22,15 +22,16 @@ func LoadConfigFromProjectConfigFile() (isConfigLoaded bool, config model.Config
 	} else {
 		existingConfigBytes, err := os.ReadFile(configFileFullPath)
 		if err != nil {
-			fmt.Printf("Something went wrong while opening the file %s.\n", configFileFullPath)
+			fmt.Printf("Unable to open the file %s.\n", configFileFullPath)
+			fmt.Printf("Error :: %v\n", err)
 			return false, model.Config{}, err
 		}
 
 		existingConfig := model.Config{}
 		err = json.Unmarshal(existingConfigBytes, &existingConfig)
 		if err != nil {
-			fmt.Printf("Could not unmarshal contents from config file.\n")
-			fmt.Printf("Error :: %v", err)
+			fmt.Printf("Unable to unmarshal contents from config file.\n")
+			fmt.Printf("Error :: %v\n", err)
 			return false, model.Config{}, err
 		}
 		return true, existingConfig, nil
@@ -40,7 +41,8 @@ func LoadConfigFromProjectConfigFile() (isConfigLoaded bool, config model.Config
 func SaveUserAndSessionInfoToProjectConfigFile(companyId string, expiresAt string, memberId string, sessionToken string) (err error) {
 	_, config, err := LoadConfigFromProjectConfigFile()
 	if err != nil {
-		fmt.Println("Something went wrong while loading items from your project's config file.")
+		fmt.Printf("Unable to load items from config file.\n")
+		fmt.Printf("Error :: %v\n", err)
 		return err
 	}
 
@@ -48,21 +50,23 @@ func SaveUserAndSessionInfoToProjectConfigFile(companyId string, expiresAt strin
 
 	configBytes, err := json.Marshal(config)
 	if err != nil {
-		fmt.Printf("Could not marshal contents for config file.\n")
-		fmt.Printf("Error :: %v", err)
+		fmt.Printf("Unable to marshal contents for config file.\n")
+		fmt.Printf("Error :: %v\n", err)
 		return err
 	}
 
 	configFileFullPath := "./.syro/config.json"
 	newFile, err := os.Create(configFileFullPath)
 	if err != nil {
-		fmt.Printf("Error creating config file\n")
+		fmt.Printf("Unable to create config file\n")
+		fmt.Printf("Error :: %v\n", err)
 		return err
 	}
 
 	_, err = newFile.Write(configBytes)
 	if err != nil {
-		fmt.Printf("Error writing contents to config file\n")
+		fmt.Printf("Unable to write to config file\n")
+		fmt.Printf("Error :: %v\n", err)
 		return err
 	}
 
@@ -72,7 +76,8 @@ func SaveUserAndSessionInfoToProjectConfigFile(companyId string, expiresAt strin
 func SaveProjectIdToProjectConfigFile(projectId string) (err error) {
 	_, config, err := LoadConfigFromProjectConfigFile()
 	if err != nil {
-		fmt.Println("Something went wrong while loading items from your project's config file.")
+		fmt.Print("Unable to load items from config file.\n")
+		fmt.Printf("Error :: %v\n", err)
 		return err
 	}
 
@@ -80,21 +85,23 @@ func SaveProjectIdToProjectConfigFile(projectId string) (err error) {
 
 	configBytes, err := json.Marshal(config)
 	if err != nil {
-		fmt.Printf("Could not marshal contents for config file.\n")
-		fmt.Printf("Error :: %v", err)
+		fmt.Printf("Unable to marshal contents for config file.\n")
+		fmt.Printf("Error :: %v\n", err)
 		return err
 	}
 
 	configFileFullPath := "./.syro/config.json"
 	newFile, err := os.Create(configFileFullPath)
 	if err != nil {
-		fmt.Printf("Error creating config file\n")
+		fmt.Printf("Unable to create config file\n")
+		fmt.Printf("Error :: %v\n", err)
 		return err
 	}
 
 	_, err = newFile.Write(configBytes)
 	if err != nil {
-		fmt.Printf("Error writing contents to config file\n")
+		fmt.Printf("Unable to write contents to config file\n")
+		fmt.Printf("Error :: %v\n", err)
 		return err
 	}
 
@@ -110,21 +117,23 @@ func SaveCompanyIdAndValidatedInfoToProjectConfigFile(companyId string, validate
 
 	configBytes, err := json.Marshal(config)
 	if err != nil {
-		fmt.Printf("Could not marshal contents for config file.\n")
-		fmt.Printf("Error :: %v", err)
+		fmt.Printf("Unable to marshal contents for config file.\n")
+		fmt.Printf("Error :: %v\n", err)
 		return err
 	}
 
 	configFileFullPath := "./.syro/config.json"
 	newFile, err := os.Create(configFileFullPath)
 	if err != nil {
-		fmt.Printf("Error creating config file\n")
+		fmt.Printf("Unable to create config file\n")
+		fmt.Printf("Error :: %v\n", err)
 		return err
 	}
 
 	_, err = newFile.Write(configBytes)
 	if err != nil {
-		fmt.Printf("Error writing contents to config file\n")
+		fmt.Printf("Unable to write to config file\n")
+		fmt.Printf("Error :: %v\n", err)
 		return err
 	}
 
@@ -132,29 +141,29 @@ func SaveCompanyIdAndValidatedInfoToProjectConfigFile(companyId string, validate
 }
 
 func SaveSecretsToEnvFile(items []model.ItemDetails) (err error) {
-	// TO DO: Uncomment once checking of existing .env file is required
+	// TO DO: Uncomment once checking of existing env file is required
 	/*
 		isExistingEnvLoaded, existingEnvItems, err := LoadItemsFromExistingEnvFile()
 		if err != nil {
-			fmt.Println("Something went wrong while loading items from the env file.")
+			fmt.Printf("Unable to load items from env file.\n")
 			return err
 		}
 	*/
 
 	envItemsString := ""
-	// TO DO: Uncomment once checking of existing .env file is required
+	// TO DO: Uncomment once checking of existing env file is required
 	/*
 		if isExistingEnvLoaded {
-			fmt.Println("A .env file already exists for this project.")
+			fmt.Printf("An env file already exists for this project.\n")
 			isOverriding, err := isOverridingItemsInExistingEnvFile()
 			if err != nil {
-				fmt.Println("Something went wrong with the isOverriding prompt.")
+				fmt.Printf("Something went wrong with the isOverriding prompt.\n")
 				return err
 			}
 			if !isOverriding {
 				isMerging, err := isMergingItemsToExistingEnvFile()
 				if err != nil {
-					fmt.Println("Something went wrong with the isMerging prompt.")
+					fmt.Printf("Something went wrong with the isMerging prompt.\n")
 					return err
 				}
 				if isMerging {
@@ -174,20 +183,22 @@ func SaveSecretsToEnvFile(items []model.ItemDetails) (err error) {
 	envFileFullPath := ".env"
 	newFile, err := os.Create(envFileFullPath)
 	if err != nil {
-		fmt.Printf("Error creating env file\n")
+		fmt.Printf("Unable to create env file.\n")
+		fmt.Printf("Error :: %v\n", err)
 		return err
 	}
 
 	_, err = newFile.WriteString(envItemsString)
 	if err != nil {
-		fmt.Printf("Error writing to env file\n")
+		fmt.Printf("Unable to write to env file.\n")
+		fmt.Printf("Error :: %v\n", err)
 		return err
 	}
 
 	return nil
 }
 
-// TO DO: Uncomment once checking of existing .env file is required
+// TO DO: Uncomment once checking of existing env file is required
 /*
 func LoadItemsFromExistingEnvFile() (isEnvLoaded bool, envItems []api.ItemDetails, err error) {
 	isEqualSign := func(char rune) bool {
@@ -200,7 +211,7 @@ func LoadItemsFromExistingEnvFile() (isEnvLoaded bool, envItems []api.ItemDetail
 	} else {
 		existingEnvItemsString, err := ioutil.ReadFile(envFileFullPath)
 		if err != nil {
-			fmt.Printf("Something went wrong while opening the file %s.\n", envFileFullPath)
+			fmt.Printf("Unable to open the file %s.\n", envFileFullPath)
 			return false, []api.ItemDetails{}, err
 		}
 		existingEnvItemsArray := strings.Fields(string(existingEnvItemsString))

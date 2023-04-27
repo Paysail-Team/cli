@@ -26,19 +26,21 @@ func ValidateProjectId(companyId string, memberId string, projectId string, sess
 		Post(fmt.Sprintf("%s%s", serverApiUrl, util.CliValidateProjectId))
 
 	if err != nil {
-		fmt.Printf("Something went wrong while validating project ID.")
-		fmt.Printf("Error :: %v", err)
+		fmt.Printf("Failed to connect to the server.\n")
+		fmt.Printf("Error :: %v\n", err)
 		return false, err
 	}
 
 	validateProjectIdResponse := model.ValidateProjectIdResponse{}
 	if err := json.Unmarshal(response.Body(), &validateProjectIdResponse); err != nil {
-		fmt.Printf("Could not unmarshal response from the validate project ID request.")
-		fmt.Printf("Error :: %v", err)
+		fmt.Printf("Unable to unmarshal response from the request.")
+		fmt.Printf("Error :: %v\n", err)
 		return false, err
 	}
 
 	if len(validateProjectIdResponse.Error) > 0 {
+		fmt.Print("The server responded with an error.\n")
+		fmt.Printf("Error :: %v\n", validateProjectIdResponse.Error)
 		return false, errors.New(validateProjectIdResponse.Error)
 	}
 
@@ -58,19 +60,21 @@ func FetchProjectItems(companyId string, memberId string, projectId string, sess
 		Post(fmt.Sprintf("%s%s", serverApiUrl, util.CliProjectItems))
 
 	if err != nil {
-		fmt.Printf("Something went wrong while fetching project secrets.")
-		fmt.Printf("Error :: %v", err)
+		fmt.Printf("Failed to connect to the server.\n")
+		fmt.Printf("Error :: %v\n", err)
 		return []model.ItemDetails{}, err
 	}
 
 	fetchProjectSecretsResponse := model.FetchProjectSecretsResponse{}
 	if err := json.Unmarshal(response.Body(), &fetchProjectSecretsResponse); err != nil {
-		fmt.Printf("Could not unmarshal response from the fetch project secrets request.")
-		fmt.Printf("Error :: %v", err)
+		fmt.Printf("Unable to unmarshal response from the request.")
+		fmt.Printf("Error :: %v\n", err)
 		return []model.ItemDetails{}, err
 	}
 
 	if len(fetchProjectSecretsResponse.Error) > 0 {
+		fmt.Print("The server responded with an error.\n")
+		fmt.Printf("Error :: %v\n", fetchProjectSecretsResponse.Error)
 		return []model.ItemDetails{}, errors.New(fetchProjectSecretsResponse.Error)
 	}
 
@@ -90,19 +94,21 @@ func PullProjectItems(accessToken string, companyId string, projectId string, en
 		Post(fmt.Sprintf("%s%s", serverApiUrl, util.CliPullProjectItems))
 
 	if err != nil {
-		fmt.Printf("Something went wrong while pulling project secrets.")
-		fmt.Printf("Error :: %v", err)
+		fmt.Printf("Failed to connect to the server.\n")
+		fmt.Printf("Error :: %v\n", err)
 		return []model.ItemDetails{}, err
 	}
 
 	pullProjectSecretsResponse := model.FetchProjectSecretsResponse{}
 	if err := json.Unmarshal(response.Body(), &pullProjectSecretsResponse); err != nil {
-		fmt.Printf("Could not unmarshal response from the pull project secrets request.")
-		fmt.Printf("Error :: %v", err)
+		fmt.Printf("Unable to unmarshal response from the request.")
+		fmt.Printf("Error :: %v\n", err)
 		return []model.ItemDetails{}, err
 	}
 
 	if len(pullProjectSecretsResponse.Error) > 0 {
+		fmt.Print("The server responded with an error.\n")
+		fmt.Printf("Error :: %v\n", pullProjectSecretsResponse.Error)
 		return []model.ItemDetails{}, errors.New(pullProjectSecretsResponse.Error)
 	}
 

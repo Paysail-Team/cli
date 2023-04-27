@@ -23,7 +23,7 @@ var runCmd = &cobra.Command{
 
 		isConfigLoaded, config, err := util.LoadConfigFromProjectConfigFile()
 		if err != nil {
-			fmt.Println("Something went wrong while loading items from your project config file.")
+			fmt.Printf("Failed to load items from config file.\n")
 		}
 		if isConfigLoaded == true {
 			projectId := ""
@@ -37,18 +37,18 @@ var runCmd = &cobra.Command{
 			}
 			items, err := api.FetchProjectItems(config.CompanyId, config.MemberId, projectId, config.SessionToken, env, customServerUrl)
 			if err != nil {
-				fmt.Println("Something went wrong while fetching project secrets.")
+				fmt.Printf("Failed to fetch project secrets.\n")
 				return
 			}
 
 			err = util.SaveSecretsToEnvFile(items)
 			if err != nil {
-				fmt.Println("Something went wrong while saving project secrets to .env file.")
+				fmt.Printf("Failed to save project secrets to env file.\n")
 				return
 			}
 
 		} else {
-			fmt.Println("The Syro CLI is not properly configured yet for this project. Kindly complete the set up first by using the login command.")
+			fmt.Printf("The Syro CLI is not properly configured yet for this project. Kindly complete the set up first by using the login command.\n")
 			return
 		}
 	},
