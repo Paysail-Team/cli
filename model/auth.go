@@ -3,11 +3,14 @@ Copyright © 2023 Syro team <info@syro.com>
 */
 package model
 
+type MembershipDetails struct {
+	MemberId    string `json:"memberId"`
+	CompanyName string `json:"companyName"`
+}
 type LoginResponseResult struct {
-	CompanyId    string `json:"companyId"`
-	ExpiresAt    string `json:"expiresAt"`
-	MemberId     string `json:"memberId"`
-	SessionToken string `json:"sessionToken"`
+	ExpiresAt    string              `json:"expiresAt"`
+	Memberships  []MembershipDetails `json:"memberships"`
+	SessionToken string              `json:"sessionToken"`
 }
 
 type LoginResponse struct {
@@ -34,6 +37,27 @@ type ValidateSessionTokenResponseResult struct {
 
 type ValidateSessionTokenResponse struct {
 	Result ValidateSessionTokenResponseResult `json:"result"`
+	Error  string                             `json:"error"`
+	Code   int                                `json:"code"`
+}
+
+type ValidateMemberIdResponseResult struct {
+	IsMemberIdValid bool   `json:"isMemberIdValid"`
+	CompanyId       string `json:"companyId"`
+}
+
+type ValidateMemberIdResponse struct {
+	Result ValidateMemberIdResponseResult `json:"result"`
+	Error  string                         `json:"error"`
+	Code   int                            `json:"code"`
+}
+
+type FetchUserMembershipsResponseResult struct {
+	Memberships []MembershipDetails `json:"memberships"`
+}
+
+type FetchUserMembershipsResponse struct {
+	Result FetchUserMembershipsResponseResult `json:"result"`
 	Error  string                             `json:"error"`
 	Code   int                                `json:"code"`
 }

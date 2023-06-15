@@ -4,8 +4,10 @@ Copyright © 2023 Syro team <info@syro.com>
 package cmd
 
 import (
+	"errors"
 	"fmt"
 	"syro/api"
+	"syro/model"
 	"syro/util"
 
 	"github.com/spf13/cobra"
@@ -40,7 +42,11 @@ var loginCmd = &cobra.Command{
 			isSessionTokenValid, err := api.ValidateSessionToken(config.SessionToken, env, customServerUrl)
 			if err != nil {
 				fmt.Printf("Failed to validate your session token. We recommend logging in again.\n")
-				companyId, memberId, sessionToken, err := loginAndUpdateProjectConfigFile(env, customServerUrl)
+				memberships, sessionToken, err := loginAndUpdateProjectConfigFile(env, customServerUrl)
+				if err != nil {
+					return
+				}
+				companyId, memberId, err := getMembershipSelectionAndUpdateProjectConfigFile(memberships, sessionToken, env, customServerUrl)
 				if err != nil {
 					return
 				}
@@ -51,7 +57,11 @@ var loginCmd = &cobra.Command{
 			}
 			if !isSessionTokenValid {
 				fmt.Printf("Your session token is invalid. You'll need to log in again.\n")
-				companyId, memberId, sessionToken, err := loginAndUpdateProjectConfigFile(env, customServerUrl)
+				memberships, sessionToken, err := loginAndUpdateProjectConfigFile(env, customServerUrl)
+				if err != nil {
+					return
+				}
+				companyId, memberId, err := getMembershipSelectionAndUpdateProjectConfigFile(memberships, sessionToken, env, customServerUrl)
 				if err != nil {
 					return
 				}
@@ -60,7 +70,20 @@ var loginCmd = &cobra.Command{
 					return
 				}
 			} else {
-				if len(config.ProjectId) == 0 {
+				if len(config.CompanyId) == 0 {
+					memberships, err := getMemberships(config.SessionToken, env, customServerUrl)
+					if err != nil {
+						return
+					}
+					companyId, memberId, err := getMembershipSelectionAndUpdateProjectConfigFile(memberships, config.SessionToken, env, customServerUrl)
+					if err != nil {
+						return
+					}
+					_, err = getProjectIdAndUpdateProjectConfigFile(companyId, memberId, config.SessionToken, env, customServerUrl)
+					if err != nil {
+						return
+					}
+				} else if len(config.ProjectId) == 0 {
 					_, err = getProjectIdAndUpdateProjectConfigFile(config.CompanyId, config.MemberId, config.SessionToken, env, customServerUrl)
 					if err != nil {
 						return
@@ -70,7 +93,11 @@ var loginCmd = &cobra.Command{
 				}
 			}
 		} else {
-			companyId, memberId, sessionToken, err := loginAndUpdateProjectConfigFile(env, customServerUrl)
+			memberships, sessionToken, err := loginAndUpdateProjectConfigFile(env, customServerUrl)
+			if err != nil {
+				return
+			}
+			companyId, memberId, err := getMembershipSelectionAndUpdateProjectConfigFile(memberships, sessionToken, env, customServerUrl)
 			if err != nil {
 				return
 			}
@@ -90,27 +117,73 @@ func init() {
 	loginCmd.MarkFlagsRequiredTogether("token", "projectId")
 }
 
-func loginAndUpdateProjectConfigFile(env string, customServerUrl string) (companyId string, memberId string, sessionToken string, err error) {
+func loginAndUpdateProjectConfigFile(env string, customServerUrl string) (memberships []model.MembershipDetails, sessionToken string, err error) {
 	fmt.Printf("Please enter your credentials.\n")
 	email, password, err := getLoginCredentials()
 	if err != nil {
 		fmt.Printf("Failed to get your credentials. Please try again.\n")
-		return "", "", "", err
+		return []model.MembershipDetails{}, "", err
 	}
 
-	companyId, expiresAt, memberId, sessionToken, err := api.Login(email, password, env, customServerUrl)
+	expiresAt, memberships, sessionToken, err := api.Login(email, password, env, customServerUrl)
 	if err != nil {
 		fmt.Printf("Login failed!\n")
-		return "", "", "", err
+		return []model.MembershipDetails{}, "", err
 	}
 	fmt.Print("Login successful!\n")
 
-	err = util.SaveUserAndSessionInfoToProjectConfigFile(companyId, expiresAt, memberId, sessionToken)
+	err = util.SaveSessionInfoToProjectConfigFile(expiresAt, sessionToken)
 	if err != nil {
-		fmt.Printf("Failed to save user and session info to your config file.\n")
-		return "", "", "", err
+		fmt.Printf("Failed to save session info to your config file.\n")
+		return []model.MembershipDetails{}, "", err
 	}
-	return companyId, memberId, sessionToken, nil
+	return memberships, sessionToken, nil
+}
+
+func getMemberships(sessionToken string, env string, customServerUrl string) (memberships []model.MembershipDetails, err error) {
+	memberships, err = api.FetchUserMemberships(sessionToken, env, customServerUrl)
+	if err != nil {
+		fmt.Printf("Failed to fetch memberships. Please try again.\n")
+		return []model.MembershipDetails{}, err
+	}
+	return memberships, nil
+}
+
+func getMembershipSelectionAndUpdateProjectConfigFile(memberships []model.MembershipDetails, sessionToken string, env string, customServerUrl string) (companyId string, memberId string, err error) {
+	selectedMemberId := ""
+	if len(memberships) == 0 {
+		fmt.Printf("You aren't a member of any company. Your membership from a company may have been revoked or you haven't signed up yet for an account.\n")
+		return "", "", errors.New("No memberships from any company.")
+	} else if len(memberships) == 1 {
+		selectedMemberId = memberships[0].MemberId
+	} else {
+		fmt.Printf("You are a member of multiple companies. Select a company to continue.\n")
+		selectedMemberId, err = util.GetMembershipSelection(memberships)
+		if err != nil {
+			fmt.Printf("Failed to select a company. Please try again.\n")
+			return "", "", err
+		}
+	}
+
+	isMemberIdValid, companyId, err := api.ValidateMemberId(selectedMemberId, sessionToken, env, customServerUrl)
+	if !isMemberIdValid {
+		if len(memberships) == 1 {
+			fmt.Printf("Failed to validate member ID. Please try again.\n")
+		} else {
+			fmt.Printf("Failed to validate selected company. The company you selected may have revoked your membership. Please try again.\n")
+			return "", "", err
+		}
+	} else {
+		if len(memberships) > 1 {
+			fmt.Printf("Company seletion successful!\n")
+		}
+		err = util.SaveCompanyIdAndMemberIdToProjectConfigFile(companyId, selectedMemberId)
+		if err != nil {
+			fmt.Printf("Failed to save company ID and member ID to config file.\n")
+			return "", "", err
+		}
+	}
+	return companyId, selectedMemberId, nil
 }
 
 func getProjectIdAndUpdateProjectConfigFile(companyId string, memberId string, sessionToken string, env string, customServerUrl string) (projectId string, err error) {

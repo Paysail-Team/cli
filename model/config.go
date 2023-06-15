@@ -13,11 +13,14 @@ type Config struct {
 	ValidatedProjectId   string `json:"validatedProjectId"`
 }
 
-func (config *Config) UpdateUserAndSessionInfo(companyId string, expiresAt string, memberId string, sessionToken string) {
-	config.CompanyId = companyId
+func (config *Config) UpdateSessionInfo(expiresAt string, sessionToken string) {
 	config.ExpiresAt = expiresAt
-	config.MemberId = memberId
 	config.SessionToken = sessionToken
+}
+
+func (config *Config) UpdateMembershipInfo(companyId string, memberId string) {
+	config.CompanyId = companyId
+	config.MemberId = memberId
 }
 
 func (config *Config) UpdateProjectId(projectId string) {

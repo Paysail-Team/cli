@@ -5,9 +5,35 @@ package util
 
 import (
 	"errors"
+	"syro/model"
 
 	"github.com/manifoldco/promptui"
 )
+
+func GetMembershipSelection(memberships []model.MembershipDetails) (memberId string, err error) {
+	templates := &promptui.SelectTemplates{
+		Label:    "{{ .CompanyName }}",
+		Active:   "▸ {{ .CompanyName }}",
+		Inactive: "  {{ .CompanyName }}",
+		Selected: "{{ .CompanyName }}",
+	}
+
+	membershipSelectionPrompt := promptui.Select{
+		Label:     "Companies",
+		Items:     memberships,
+		Templates: templates,
+	}
+
+	i, _, err := membershipSelectionPrompt.Run()
+
+	if err != nil {
+		return "", err
+	}
+
+	selectedMemberId := memberships[i].MemberId
+
+	return selectedMemberId, nil
+}
 
 func GetProjectId() (projectId string, err error) {
 	projectIdValidator := func(input string) error {

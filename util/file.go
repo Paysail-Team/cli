@@ -38,7 +38,7 @@ func LoadConfigFromProjectConfigFile() (isConfigLoaded bool, config model.Config
 	}
 }
 
-func SaveUserAndSessionInfoToProjectConfigFile(companyId string, expiresAt string, memberId string, sessionToken string) (err error) {
+func SaveSessionInfoToProjectConfigFile(expiresAt string, sessionToken string) (err error) {
 	_, config, err := LoadConfigFromProjectConfigFile()
 	if err != nil {
 		fmt.Printf("Unable to load items from config file.\n")
@@ -46,7 +46,42 @@ func SaveUserAndSessionInfoToProjectConfigFile(companyId string, expiresAt strin
 		return err
 	}
 
-	config.UpdateUserAndSessionInfo(companyId, expiresAt, memberId, sessionToken)
+	config.UpdateSessionInfo(expiresAt, sessionToken)
+
+	configBytes, err := json.Marshal(config)
+	if err != nil {
+		fmt.Printf("Unable to marshal contents for config file.\n")
+		fmt.Printf("Error :: %v\n", err)
+		return err
+	}
+
+	configFileFullPath := "./.syro/config.json"
+	newFile, err := os.Create(configFileFullPath)
+	if err != nil {
+		fmt.Printf("Unable to create config file\n")
+		fmt.Printf("Error :: %v\n", err)
+		return err
+	}
+
+	_, err = newFile.Write(configBytes)
+	if err != nil {
+		fmt.Printf("Unable to write to config file\n")
+		fmt.Printf("Error :: %v\n", err)
+		return err
+	}
+
+	return nil
+}
+
+func SaveCompanyIdAndMemberIdToProjectConfigFile(companyId string, memberId string) (err error) {
+	_, config, err := LoadConfigFromProjectConfigFile()
+	if err != nil {
+		fmt.Printf("Unable to load items from config file.\n")
+		fmt.Printf("Error :: %v\n", err)
+		return err
+	}
+
+	config.UpdateMembershipInfo(companyId, memberId)
 
 	configBytes, err := json.Marshal(config)
 	if err != nil {
