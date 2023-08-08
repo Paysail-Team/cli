@@ -16,16 +16,23 @@ jobs:
         id: package_version
         uses: martinbeentjes/npm-get-version-action@v1.3.1
 
-      - name: Create GitHub Release with package.json version
-        uses: actions/create-release@v1
-        env:
-          GITHUB_TOKEN: ${{ github.token }}
+      # - name: Create GitHub Release with package.json version
+      #   uses: actions/create-release@v1
+      #   env:
+      #     GITHUB_TOKEN: ${{ github.token }}
+      #   with:
+      #     tag_name: ${{ steps.package_version.outputs.current-version }}
+      #     release_name: ${{ steps.package_version.outputs.current-version }}
+      #     body: ${{ steps.package_version.outputs.current-version }}
+      #     draft: false
+      #     prerelease: false
+
+      - name: Create Github release with package.json version
+        uses: ncipollo/release-action@v1
         with:
-          tag_name: ${{ steps.package_version.outputs.current-version }}
-          release_name: ${{ steps.package_version.outputs.current-version }}
-          body: ${{ steps.package_version.outputs.current-version }}
-          draft: false
-          prerelease: false
+          tag: ${{ steps.package_version.outputs.current-version }}
+          commit: main
+          artifacts: "build.tar.gz"
 
       - name: Setup Node.js
         uses: actions/setup-node@v2
