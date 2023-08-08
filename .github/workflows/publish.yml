@@ -23,17 +23,13 @@ jobs:
           registry-url: https://registry.npmjs.org
 
       - name: Build/Dist CLI
-        run: npm ci && npm run dist
-
-      - name: Create tar.gz file from dist folder
-        run: tar -czvf build.tar.gz build
+        run: npm ci && npm run build
 
       - name: Create Github release with package.json version
         uses: ncipollo/release-action@v1
         with:
           tag: ${{ steps.package_version.outputs.current-version }}
           commit: main
-          artifacts: "build.tar.gz"
 
       - name: Publish to NPM
         run: npm publish --access public
