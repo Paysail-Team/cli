@@ -27,18 +27,25 @@ jobs:
       #     draft: false
       #     prerelease: false
 
-      - name: Create Github release with package.json version
-        uses: ncipollo/release-action@v1
-        with:
-          tag: ${{ steps.package_version.outputs.current-version }}
-          commit: main
-          artifacts: "build.tar.gz"
 
       - name: Setup Node.js
         uses: actions/setup-node@v2
         with:
           node-version: 16
           registry-url: https://registry.npmjs.org
+
+      - name: Build CLI
+        run: npm run build
+
+      - name: Create tar.gz file from dist folder
+        run: tar -czvf build.tar.gz build
+
+      - name: Create Github release with package.json version
+        uses: ncipollo/release-action@v1
+        with:
+          tag: ${{ steps.package_version.outputs.current-version }}
+          commit: main
+          artifacts: "build.tar.gz"
 
       - name: Publish to NPM
         run: npm publish --access public
