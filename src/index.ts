@@ -11,11 +11,12 @@ const program = new commander.Command();
 program
     .version("1.0.0")
     .description(`${logo()}\n${chalk.whiteBright(`Syro CLI allows you to access your secrets and inject them into your CI/CD pipelines.`)}`)
+    
+program
     .command('pull')
     .description('Pulls all secrets from the given project and creates a .env file in the current directory')
     .argument('<accessToken>', 'The access token')
-    .argument('<projectId>', 'The project id')
-    .option('-e, --env', 'The target environment', "production")
+    .argument('[environment]', 'The target environment. Defaults to production', "production")
     .action(pull);
 
 program.parse();
@@ -24,11 +25,6 @@ if (!process.argv.slice(2).length) {
     program.outputHelp();
 }
 
-enum Environment {
-    production = 'production',
-    staging = 'staging',
-    local = 'local'
-}
 function logo() {
     return `
 ${chalk.bgWhiteBright(chalk.black(`
@@ -38,13 +34,12 @@ ${chalk.bgWhiteBright(chalk.black(`
 `))}`
 }
 
-function host() {
-    const options = program.opts()
-    if (options.env) {
-        switch (options.env) {
-            case Environment.production: return "https://api-production.syro.com"
-            case Environment.staging: return "https://api-production.syro.com"
-            case Environment.local: return "http://localhost:1400/"
+function host(environment: string) {
+    if (environment && environment.length > 0) {
+        switch (environment) {
+            case 'production': return "https://api-production.syro.com"
+            case 'staging': return "https://api-staging.syro.com"
+            case 'local': return "http://localhost:1400"
             default: return "https://api-production.syro.com"
         }
     } else {
@@ -76,19 +71,18 @@ function maskedValue(value: string) {
     return generate(value, 5)
 }
 
-async function pull(accessToken: string, projectId: string) {
+async function pull(accessToken: string, environment: string) {
     try {
         console.log(logo())
         console.log(chalk.yellowBright(`Pulling secrets...`))
         const response = await axios({
             "method": "POST",
-            "url": `${host()}/secrets`,
+            "url": `${host(environment)}/secrets`,
             "headers": {
                 "Content-Type": "application/json; charset=utf-8"
             },
             "data": {
-                "accessToken": accessToken,
-                "projectId": projectId
+                "accessToken": accessToken
             }
         })
         const secrets: { key: string, value: string }[] = response.data.result
@@ -111,6 +105,6 @@ async function pull(accessToken: string, projectId: string) {
 
     } catch (error: any) {
         console.log(chalk.redBright(`
-⨯ Unable to pull secrets. Check accessToken and projectId, and try again.\n\nError: ${error}\n`))
+⨯ Unable to pull secrets. Check accessToken and try again.\n\nError: ${error}\n`))
     }
 }

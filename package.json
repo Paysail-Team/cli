@@ -1,6 +1,6 @@
 {
   "name": "@withsyro/cli",
-  "version": "1.6.0",
+  "version": "1.7.0",
   "description": "Syro CLI allows you to access your secrets and inject them into your CI/CD pipelines.",
   "type": "module",
   "main": "build/index.js",
@@ -10,7 +10,6 @@
   "scripts": {
     "build": "npx tsc",
     "start": "npm run build && node ./build/index.js",
-    "dist": "npm run build && npx pkg . --out-path build/",
     "local": "npm run build && npm install -g"
   },
   "keywords": [
