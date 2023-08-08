@@ -35,7 +35,7 @@ jobs:
           registry-url: https://registry.npmjs.org
 
       - name: Build CLI
-        run: npm run build
+        run: npm ci && npm run build
 
       - name: Create tar.gz file from dist folder
         run: tar -czvf build.tar.gz build
