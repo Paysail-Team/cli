@@ -1,6 +1,6 @@
 {
   "name": "@withsyro/cli",
-  "version": "1.7.0",
+  "version": "1.8.0",
   "description": "Syro CLI allows you to access your secrets and inject them into your CI/CD pipelines.",
   "type": "module",
   "main": "build/index.js",

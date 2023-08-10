@@ -77,7 +77,7 @@ async function pull(accessToken: string, environment: string) {
         console.log(chalk.yellowBright(`Pulling secrets...`))
         const response = await axios({
             "method": "POST",
-            "url": `${host(environment)}/secrets`,
+            "url": `${host(environment)}/cli/secrets`,
             "headers": {
                 "Content-Type": "application/json; charset=utf-8"
             },
@@ -85,23 +85,25 @@ async function pull(accessToken: string, environment: string) {
                 "accessToken": accessToken
             }
         })
-        const secrets: { key: string, value: string }[] = response.data.result
-        if (secrets === undefined) {
+        const data: { pn: string, efn: string, i: { key: string, value: string }[] } = response.data
+        
+        if (data === undefined || data.i === undefined || data.pn === undefined || data.efn === undefined) {
             throw new Error("0")
         }
-        const secretsTable = secrets.map(secret => {
+
+        const secretsTable = data.i.map(secret => {
             return { key: secret.key, value: maskedValue(secret.value) };
         })
-        console.log(chalk.green(`✔ Pulled ${secrets.length} secret${secrets.length === 1 ? "" : "s"}.`))
+        console.log(chalk.green(`✔ Pulled ${data.i.length} secret${data.i.length === 1 ? "" : "s"} from ${data.pn}.`))
         console.table(secretsTable)
 
-        console.log(chalk.yellowBright(`Generating .env file...`))
+        console.log(chalk.yellowBright(`Generating ${data.efn} file...`))
         let fileText = ""
-        secrets.forEach(item => {
+        data.i.forEach(item => {
             fileText = fileText + `${item.key}='${item.value}'\n`
         })
-        fs.writeFileSync(`.env`, fileText)
-        console.log(chalk.green(`✔ Generated .env at ${path.resolve(process.cwd())}/.env\n`))
+        fs.writeFileSync(data.efn, fileText)
+        console.log(chalk.green(`✔ Generated ${data.efn} at ${path.resolve(process.cwd())}/${data.efn}\n`))
 
     } catch (error: any) {
         console.log(chalk.redBright(`
