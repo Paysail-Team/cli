@@ -103,7 +103,7 @@ async function pull(accessToken: string, environment: string) {
             fileText = fileText + `${item.key}='${item.value}'\n`
         })
         fs.writeFileSync(data.efn, fileText)
-        console.log(chalk.green(`✔ Generated ${data.efn} at ${path.resolve(process.cwd())}/${data.efn}\n`))
+        console.log(chalk.green(`✔ Generated ${data.efn} at ${path.resolve(process.cwd())}/\n`))
 
     } catch (error: any) {
         console.log(chalk.redBright(`
